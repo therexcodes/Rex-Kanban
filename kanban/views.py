@@ -15,8 +15,14 @@ class BoardListCreateView(generics.ListCreateAPIView):
         return Board.objects.filter(owner=self.request.user) # Only return the user's boards
     
     def perform_create(self, serializer):
-        return serializer.save(owner=self.request.user) # Set the owner to the logged-in user
-    
+        """Ensure the board is created with the logged-in user as owner"""
+        try:
+            serializer.save(owner=self.request.user) # Set the owner to the logged-in user
+        except Exception as e:
+            return Response (
+                {"error": "An error occurred while creating the board."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
     
 class BoardDeleteView (generics.DestroyAPIView):
     """VIEW that delete a board"""
@@ -26,6 +32,20 @@ class BoardDeleteView (generics.DestroyAPIView):
     
     def get_queryset(self):
         return Board.objects.filter(owner=self.request.user)
+    
+    def delete(self, request, *args, **kwargs):
+        """Custom delete method to handle errors properly"""
+        try:
+            instance = self.get_object()
+            self.perform_destroy(instance)
+            return Response({"message": "Board deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+        except Board.DoesNotExist:
+            return Response({"error": "Board not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response(
+                {"error": "An unexpected error occurred."}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
     
     
 class ColumnListCreateView(generics.ListCreateAPIView):
@@ -40,7 +60,20 @@ class ColumnListCreateView(generics.ListCreateAPIView):
     
     def perform_create(self, serializer):
         board_id = self.request.data.get("board") #get board ID from request
-        serializer.save(board_id=board_id) # Assign the column to the correct board
+        
+        try:
+            board = Board.objects.get(id=board_id, owner=self.request.user)
+            serializer.save(board=board)  # Assign the column to the correct board
+        except Board.DoesNotExist:
+            raise Response(
+                {"error": "Board not found or you do not have permission to add columns to it."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        except Exception:
+            raise Response(
+                {"error": "An error occurred while creating the column."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
 
 class ColumnDeleteView (generics.DestroyAPIView):
@@ -52,6 +85,20 @@ class ColumnDeleteView (generics.DestroyAPIView):
     
     def get_queryset(self):
         return Column.objects.filter(board__owner=self.request.user)
+    
+    def delete(self, request, *args, **kwargs):
+        """Custom delete method to handle errors properly"""
+        try:
+            instance = self.get_object()
+            self.perform_destroy(instance)
+            return Response({"message": "Column deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+        except Column.DoesNotExist:
+            return Response({"error": "Column not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception:
+            return Response(
+                {"error": "An unexpected error occurred while deleting the column."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
         
 class  TaskListCreateView(generics.ListCreateAPIView):
@@ -65,7 +112,20 @@ class  TaskListCreateView(generics.ListCreateAPIView):
     
     def perform_create(self, serializer):
         column_id = self.request.data.get("column") # get column_id from the request
-        serializer.save(column_id=column_id) # Asssign task to the correct column 
+        
+        try:
+            column = Column.objects.get(id=column_id, board__owner=self.request.user)
+            serializer.save(column=column)  # Assign the task to the correct column
+        except Column.DoesNotExist:
+            return Response(
+                {"error": "Column not found or you do not have permission to add tasks to it."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        except Exception:
+            return Response(
+                {"error": "An error occurred while creating the task."},
+                status=status.HTTP_400_BAD_REQUEST
+            ) 
         
         
 class TaskDeleteView(generics.DestroyAPIView):
@@ -78,6 +138,19 @@ class TaskDeleteView(generics.DestroyAPIView):
     def get_queryset(self):
         return Task.objects.filter(column__board__owner=self.request.user)
     
+    def delete(self, request, *args, **kwargs):
+        """Custom delete method to handle errors properly"""
+        try:
+            instance = self.get_object()
+            self.perform_destroy(instance)
+            return Response({"message": "Task deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+        except Task.DoesNotExist:
+            return Response({"error": "Task not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception:
+            return Response(
+                {"error": "An unexpected error occurred while deleting the task."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 class TaskUpdateView(generics.UpdateAPIView):
     """Allows a user to update a task, including moving it to another column"""
     
