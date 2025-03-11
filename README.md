@@ -55,32 +55,32 @@ ALLOWED_HOSTS=*
 ### **Authentication**
 | Method | Endpoint | Description |
 |--------|---------|-------------|
-| POST | `/api/auth/register/` | Register a new user |
-| POST | `/api/auth/login/` | Login & get access token |
-| POST | `/api/auth/logout/` | Logout & invalidate token |
-| POST | `/api/auth/token/refresh/` | Refresh JWT token |
+| POST | `/api/accounts/register/` | Register a new user |
+| POST | `/api/accounts/login/` | Login & get access token |
+| POST | `/api/accounts/logout/` | Logout & invalidate token |
+| POST | `/api/accounts/token/refresh/` | Refresh JWT token |
 
 ### **Boards**
 | Method | Endpoint | Description |
 |--------|---------|-------------|
-| GET | `/api/boards/` | Get all boards for the authenticated user |
-| POST | `/api/boards/` | Create a new board |
-| DELETE | `/api/boards/<id>/` | Delete a board |
+| GET | `/api/kanban/boards/` | Get all boards for the authenticated user |
+| POST | `/api/kaban/boards/` | Create a new board |
+| DELETE | `/api/kanban/boards/<id>/` | Delete a board |
 
 ### **Columns**
 | Method | Endpoint | Description |
 |--------|---------|-------------|
-| GET | `/api/columns/` | Get all columns in a board |
-| POST | `/api/columns/` | Create a new column in a board |
-| DELETE | `/api/columns/<id>/` | Delete a column |
+| GET | `/api/kanban/columns/` | Get all columns in a board |
+| POST | `/api/kanban/columns/` | Create a new column in a board |
+| DELETE | `/api/kanban/columns/<id>/` | Delete a column |
 
 ### **Tasks**
 | Method | Endpoint | Description |
 |--------|---------|-------------|
-| GET | `/api/tasks/` | Get all tasks for the authenticated user |
-| POST | `/api/tasks/` | Create a new task under a column |
-| PUT | `/api/tasks/<id>/` | Update a task |
-| DELETE | `/api/tasks/<id>/` | Delete a task |
+| GET | `/api/kanban/tasks/` | Get all tasks for the authenticated user |
+| POST | `/api/kanban/tasks/` | Create a new task under a column |
+| PUT | `/api/kanban/tasks/<id>/` | Update a task |
+| DELETE | `/api/kanban/tasks/<id>/` | Delete a task |
 
 ---
 
